@@ -516,9 +516,12 @@ class JatsDocumentBackend(DeclarativeDocumentBackend):
                 "affiliation_names": [],
             }
 
-            # Affiliation names
+            # Affiliation names. JATS declares `rid` as optional IDREFS, so an
+            # xref can have no ids or several ids separated by whitespace.
             affiliation_ids = [
-                a.attrib["rid"] for a in author_node.xpath('xref[@ref-type="aff"]')
+                rid
+                for a in author_node.xpath('xref[@ref-type="aff"]')
+                for rid in a.get("rid", "").split()
             ]
             for id in affiliation_ids:
                 if id in affiliation_ids_names:

@@ -1765,6 +1765,29 @@ def test_jats_author_affiliations_still_map_from_xref():
     assert "Example University" in md
 
 
+@pytest.mark.parametrize(
+    ("xref", "expected_affiliations"),
+    [
+        ('<xref ref-type="aff">*</xref>', []),
+        ('<xref ref-type="aff" rid="aff1 aff2">1,2</xref>', ["Uni One", "Uni Two"]),
+    ],
+)
+def test_jats_author_affiliation_xref_rid_is_idrefs(
+    xref: str, expected_affiliations: list[str]
+):
+    """`rid` is optional and can hold several ids; neither case may lose content."""
+    doc = convert_jats_contribs(
+        f"""<contrib contrib-type="author"><name><given-names>Jane</given-names><surname>Doe</surname></name>{xref}</contrib>""",
+        """<aff id="aff1">Uni One</aff><aff id="aff2">Uni Two</aff>""",
+    )
+
+    md = doc.export_to_markdown()
+    assert "Author Variant Test" in md
+    assert "Jane Doe" in md
+    for affiliation in ("Uni One", "Uni Two"):
+        assert (affiliation in md) == (affiliation in expected_affiliations)
+
+
 def _furniture_statements(doc: DoclingDocument) -> list[list[tuple[str, str | None]]]:
     """Return the (text, hyperlink) runs of each furniture text, in document order.
 
